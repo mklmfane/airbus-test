@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage("verify tooling"){
+        stage("verify tooling") {
             steps {
                 sh '''
                     docker info
@@ -12,16 +12,16 @@ pipeline {
                 '''
             }
         }
-        stage('prune docker data'){
+        stage('prune docker data') {
             sh 'docker system prune -a --volume -f'
         }
-        stage('start container'){
+        stage('start container') {
             steps {
                 sh 'docker compose up -d --no-color --wait'
                 sh 'docker compose ps'
             }
         }
-        stage('Run test against the container'){
+        stage('Run test against the container' ){
             steps {
             sh 'curl http://localhost:5000 | jq'
         }
