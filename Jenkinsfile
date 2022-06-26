@@ -13,7 +13,9 @@ pipeline {
             }
         }
         stage('prune docker data') {
-            sh 'docker system prune -a --volume -f'
+            steps {
+                sh 'docker system prune -a --volume -f'
+            }   
         }
         stage('start container') {
             steps {
@@ -23,9 +25,9 @@ pipeline {
         }
         stage('Run test against the container' ){
             steps {
-            sh 'curl http://localhost:5000 | jq'
+                sh 'curl http://localhost:5000 | jq'
+            }
         }
-    }
     }
     post {
         always {
