@@ -1,9 +1,7 @@
 To prepare the environment, ensure that these sets of pre-requisites are followed:
  1. Install ansible version up to 2.0 [a link](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
  2. Install vagrant tool [a link](https://www.vagrantup.com/docs/installation)
- 3. cd kubernetes-using-ansible-vagrant
- 4. vagrant up
- 5. After vagrant completes successfully, launch cd ../ 
+ 3. vagrant up 
 
  The environment will be installing a kubernetes master with 2 nodes and jenkins master with jenkins slave.
 As a prerequisistes, nesure that you are adding a jenkins slave by folloiwng the steps from this guide [a link](https://devopscube.com/setup-slaves-on-jenkins-2/)
