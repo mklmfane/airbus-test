@@ -682,7 +682,7 @@ dependencies:
     repository: https://mlabouardy.github.io/watchlist-charts
 Now that all pieces are running together and we checked the core functionality, let’s validate that the solution is up for a typical GitFlow development process.
 
-11.5 Running post-deployment smoke tests
+## Running post-deployment smoke tests
 The microservices are deployed. However, that doesn’t mean these services are properly configured and correctly performing all the jobs that they’re supposed to be doing.
 
 You want to have a health check that indicates the current health operation of your services. You can set up a simple one by implementing an HTTP request to a service URL and check whether the response code is 200.
@@ -720,7 +720,7 @@ To be able to issue advanced HTTP requests against the service URL, we will inst
 
 We can now update the movies-store’s Jenkinsfile. The plugin offers an httpRequest DSL object that can be used to call a remote URL. In the following listing, httpRequest returns a response object that exposes the response body through a content attribute. Then, we use the JsonSlurper class to parse the response to a JSON object. The updated Healthcheck stage is shown in the following listing.
 
-Movie store Healthcheck stage
+## Movie store Healthcheck stage
 
 stage('Healthcheck'){
      def response = httpRequest getUrl()
@@ -741,7 +741,7 @@ This picture shows the end result of the CI/CD pipeline of each microservice run
 
 When you opt for Jenkins to build cloud-native applications running in Kubernetes, you’re required to create extensive configurations, as well as spending considerable time learning and using all of the necessary plugins to make it happen. Fortunately, Jenkins X comes into play to offer simplicity and ready-to-go templates.
 
-# Discovering Jenkins X
+## Discovering Jenkins X
 Jenkins X (https://jenkins-x.io/) is a CI/CD solution for modern cloud applications on Kubernetes. It’s used to simplify the configurations and lets you harness the power of Jenkins 2.0. It also lets you use open source tools like Helm, Artifact Hub, ChartMuseum, Nexus, and Docker Registry to easily build cloud-native applications.
 
 
@@ -766,23 +766,17 @@ Jenkins X also deploys a set of supporting services, including the Jenkins dashb
 jx import
 If you wish to import a project that is already in a remote Git repository, you can use the --url argument:
 
-jx import --url https://github.com/mlabouardy/jx-movies-store
-The following is the output of the import command:
+jx import --url https://github.com/mklmfane/airbus-test/tree/main/migrationaws/jx/movies-store
 
 
 
 Jenkins X will go over the code and choose the right default build pack for the project based on the programming language. Our project was developed in Go, so it will be a Go build pack. Jenkins X will generate a Jenkinsfile, Dockerfile, and Helm chart based on the project runtime environment. The import command will create a remote repository on GitHub, register a webhook, and push the code to the remote repository.
-
-
 
 ![pipeline](images/fullpipeline.png)
 
 Jenkins X will also automatically create a Jenkins multibranch pipeline job for the project, and the pipeline will be triggered. You can check the progress of the pipeline with this command:
 
 jx get activity -f jx-movies-store -w
-
-
-
 
 
 The executed pipeline will clone the repository, build the Docker image, and push it to a Docker registry, as shown in the following listing.
@@ -820,13 +814,11 @@ The release will be promoted automatically to the staging environment, as shown 
 During the promotion stage, a new PR will be created by Jenkins X to deploy the new release to staging. This PR will add our application and its version in the env/requirements.yaml file inside the Git repository, as shown in figure 11.38.
 
 
-When you’re satisfied with your application, you can use the jx CLI to promote the application to a different environment using a GitOps approach. For example, we can promote our application to production with the following command:
+In case you’re satisfied with your application, you can use the jx CLI to promote the application to a different environment using a GitOps approach. For example, we can promote our application to production with the following command:
 
 jx promote --app jx-movies-store --version 0.0.3 --env production
-A new PR will be created, but this time on our production repository, and the environment-watchlist-production job is triggered, as shown in figure 11.46.
 
-
-
+A new PR will be created, but this time on our production repository, and the environment-watchlist-production job is triggered.
 
 Once the pull request is validated, the production pipeline runs Helm, which deploys the environment, pulling Helm charts from ChartMuseum, and Docker images from the Docker Registry. Kubernetes creates the project’s resources, typically a pod, service, and ingress.
 
