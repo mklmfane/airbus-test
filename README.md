@@ -16,4 +16,4 @@ Jenkinsfile will be installing the movie-recommnder application by using `docker
 
 # Build the pipeline
 
-![pipeline](http://https://github.com/mklmfane/airbus-test/images/pipeline.png)
+![pipeline](images/pipeline.png)
