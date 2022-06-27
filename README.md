@@ -42,7 +42,7 @@ spec:
   - name: registry
 Our application is deployed. To access it, we need to create a K8s service for both the marketplace and store, as shown in the following listing. Create a services directory in the root repository, and then create a service for movies-store called movies-store.svc.yaml. The service creates a cloud network load balancer (for instance, AWS Elastic Load Balancer). This provides an externally accessible IP address for accessing the Movies Store API.
 
-Movie store service resource can be created by using the following template
+Movie store service resource can be created by using the following template:
 
 apiVersion: v1
 kind: Service
@@ -58,7 +58,7 @@ spec:
   type: LoadBalancer
 Additionally, we create another service to expose the Movies Marketplace (UI). Add the content in the following listing to movies-marketplace.svc.yaml.
 
-Listing 11.8 Movies Marketplace service resource
+
 
 apiVersion: v1
 kind: Service
@@ -97,18 +97,15 @@ stage('Deploy'){
 
 
 
-
-
 Type the following command on your local machine:
 
 kubectl get svc -n watchlist
 It should show the load balancers for the three K8s services:
 
 
-
-
-
-NOTE Make sure to set the load balancer FQDN in the environment.sandbox.tf file of the movies-marketplace project. The API URL will be injected while building the marketplace Docker image. Refer to section 9.1.2 for more details.
+NOTE 
+------
+Make sure to set the load balancer FQDN in the environment.sandbox.tf file of the movies-marketplace project. The API URL will be injected while building the marketplace Docker image. Refer to section 9.1.2 for more details.
 
 To secure access to the Store API, we can enable an HTTPS listener on the public load balancer by updating the movies-store service with the changes detailed in the following listing.
 
@@ -143,9 +140,7 @@ Push the changes to the remote repository. Jenkins will deploy the changes and u
 
 
 
-
-
-It’s optional, but you can create an A record in Amazon Route 53 pointing to the load balancer FQDN and update environment.sandbox.ts to use the friendly domain name instead of the load balancer FQDN; see the following listing.
+It is very recommended to create an A record in Amazon Route 53 pointing to the load balancer FQDN just to update environment.sandbox.ts for a proper usage of the friendly domain name instead of using the load balancer FQDN. You can see in the following listing how you cna do it.
 
 
 
@@ -153,7 +148,8 @@ export const environment = {
   production: false,
   apiURL: 'https://api.sandbox.domain.com',
 };
-If you point your browser to the marketplace URL, it should call the Movies Store API and list the movies crawled from IMDb pages, as shown in figure 11.9. It might take several minutes for DNS to propagate and for the marketplace to show up.
+
+In case you point your browser to the marketplace URL, it should call the Movies Store API and list the movies crawled from IMDb pages, as shown in figure 11.9. It might take several minutes for DNS to propagate and for the marketplace to show up.
 
 
 
@@ -396,12 +392,14 @@ Push the changes to the develop branch. The GitHub repository should look simila
 
 
 Watchlist Helm chart
+----------------------
 
 On Jenkins, a new build will be triggered. At the end of the Deploy stage, the helm upgrade command will be executed; the output is shown in figure 11.13.
 
 
 
 Helm upgrade output
+--------------------
 
 Now every change on the develop branch will build a new Helm chart and create a new release on the sandbox cluster. If the Docker image has been changed, Kubernetes rolling updates provide the functionality to deploy changes with 0% downtime.
 
@@ -423,7 +421,7 @@ If you push the changes to the preprod branch, the application will be deployed 
 
 
 
-# CI/CD workflow on preprod branch
+## CI/CD workflow on preprod branch
 
 We can verify that the preprod version has been deployed by typing the following command:
 
@@ -433,11 +431,12 @@ The movies-marketplace deployment has annotations with git/commitId equal to the
 
 
 Movies Marketplace deployment description
+-------------------------------------------
 
 For production deployment, update values.override.yaml with proper values, as shown in the following listing. In this example, we set the image tag to latest, the environment to production, and we configure five replicas of the movies-parser service.
 
 Production variables
-
+--------------------------------
 environment: production
 mongodb:
   mongodbUsername: 'watchlist'
@@ -452,19 +451,19 @@ Now if a push event occurs on the master branch on any of the four microservices
 
 
 
-# User approval for production deployment
+## User approval for production deployment
 
 If the deployment is approved, the watchlist-deployment job will be triggered, and the master nested job will be executed. As a result, a new Helm release of the watchlist application will be created in production, as shown in figure 11.17.
 
 
 
-# Application deployment in production
+## Application deployment in production
 
 Upon the completion of the deployment process, a Slack notification will be sent to a preconfigured Slack channel, as shown in figure 11.18.
 
 
 
-# Production deployment Slack notification
+## Production deployment Slack notification
 
 Run the kubectl get pods command. This should display five pods based on the movies-parser Docker image:
 
@@ -478,16 +477,16 @@ Navigate to that address in your browser, and the Movies Marketplace UI should b
 
 
 
-# Marketplace production environment
+## Marketplace production environment
 
 Under a production environment, you would replace the load balancer FQDN with an alias in Route 53. Refer to the official AWS documentation for instructions: http://mng.bz/Rq8P.
 
-# Packaging Kubernetes applications with Helm
+## Packaging Kubernetes applications with Helm
 So far, you have seen how to create one single chart for the microservices-based application and how to create a new release with Jenkins upon new Git commits. Another way of packaging the application is to create separate charts for each microservice, and then reference those charts as dependencies in the main chart (similar to a MongoDB chart). Figure 11.20 illustrates how Helm charts are packaged within a CI/CD pipeline.
 
 
 
-# CI/CD of containerized application with Helm
+## CI/CD of containerized application with Helm
 
 On a push event, a Jenkins build will be triggered to build the Docker image and package the new release in a Helm chart. From there, the new chart is deployed to the corresponding Kubernetes environment. Along the way, a Slack notification is sent to notify the developers about the pipeline status.
 
@@ -514,18 +513,16 @@ NOTE Nexus Repository OSS supports Helm charts as well. You can publish charts t
 
 Then, push this file to the master branch by issuing these commands.
 
-git clone https://github.com/mlabouardy/watchlist-charts.git
-cd watchlist-charts
+
+cd migrationaws/deployment/helm/watchlist
 touch index.yaml
 git add index.yaml
 git commit -m "add index.yaml"
-git push origin master
-
-
+git push origin main
 
 
 With the private Helm repository ready to be used, let’s package and publish our first Helm chart. 
-The Build stage should look like the following listing. (The complete Jenkinsfile is available at chapter11/pipeline/movies-marketplace/Jenkinsfile.)
+The Build stage should look like the following listing. (The complete Jenkinsfile is available in this folder pipeline/movies-marketplace/Jenkinsfile.)
 
 
 stage('Build') {
@@ -546,13 +543,13 @@ stage('Build') {
   }
  )
 }
-❶ Builds the appropriate Docker image by injecting the target environment settings
 
+❶ Builds the appropriate Docker image by injecting the target environment settings
 ❷ Packages the application in a Helm chart
 
 The helm package command, as its name indicates, packages the chart directory into a chart archive (movies-marketplace-1.0.0.tgz). Finally, update the Push stage to use a parallel step as well, as shown in the following listing.
 
-Listing 11.21 Storing the Docker image in a private registry
+This is how to store the Docker image in a private registry
 
 stage('Push') {
  parallel(
@@ -571,53 +568,75 @@ stage('Push') {
   }
  )
 }
+
 ❶ Authenticates with ECR in order to push the Docker images afterward
-
 ❷ Tags and stores the image in ECR
-
-❸ Publishes the Helm chart to GitHub—see listing 11.22 for complete instructions.
-
-The Helm Chart stage will clone the watchlist-charts GitHub repository with the git clone command, and add the metadata of the new packaged Helm chart to index.yaml with the helm repo index command. Then it pushes index.yaml and the archive chart to the Git repository; see the following listing.
-
-Listing 11.22 Publishing the Helm chart to GitHub
+❸ Publishes the Helm chart to GitHub.
 
 'Helm Chart': {
-    sh 'helm repo index --url https://mlabouardy.github.io/watchlist-charts/ .' ❶
-    sshagent(['github-ssh']) {                                                  ❷
+    sh 'helm repo index --url https://github.com/mklmfane/airbus-test/tree/main/migrationaws/deployment/helm/watchlist/ .' 
+    sshagent(['github-ssh']) {                                                  
       sh 'git clone git@github.com:mlabouardy/watchlist-charts.git.
       sh 'mv movies-marketplace-1.0.0.tgz watchlist-charts/'
-      dir('watchlist-charts'){                                                  ❸
+      dir('watchlist-charts'){                                                  
           sh 'git add index.yaml movies-marketplace-1.0.0.tg.
 && git commit -m "movies-marketplace&quot.
-&& git push origin master'                                                      ❹
+&& git push origin master'                                                      
       }
      }
   }
+
+The Helm Chart stage will clone the watchlist-charts GitHub repository with the git clone command, and add the metadata of the new packaged Helm chart to index.yaml with the helm repo index command. Then it pushes index.yaml and the archive chart to the Git repository; see the following listing.
+
+This is hot to publish the Helm chart to GitHub
+
+'Helm Chart': {
+    sh 'helm repo index --url https://github.com/mklmfane/airbus-test/tree/main/migrationaws/deployment/helm/watchlist/ .' 
+    sshagent(['github-ssh']) {                                                  
+      sh 'git clone git@github.com:mlabouardy/watchlist-charts.git.
+      sh 'mv movies-marketplace-1.0.0.tgz watchlist-charts/'
+      dir('watchlist-charts'){                                                  
+          sh 'git add index.yaml movies-marketplace-1.0.0.tg.
+&& git commit -m "movies-marketplace&quot.
+&& git push origin master'                                                      
+      }
+     }
+  }
+
 ❶ Generates an index file, given a directory containing packaged charts
-
 ❷ Provides SSH credentials to builds via an ssh-agent
-
 ❸ Changes current directory to watchlist-charts folder
-
 ❹ Commits and pushes the archive and index file to GitHub
 
-If you push the new Jenkinsfile to the Git remote repository, a new pipeline will be triggered, as shown in figure 11.23. At the Build stage, the movies-marketplace Docker image and Helm chart will be packaged. Next, the Push stage will be executed to push the Docker image to the Docker private registry and the Helm chart to the GitHub repository.
+During the Build stage, the movies-marketplace Docker image and Helm chart will be packaged. 
+Then, the Push stage will be executed to push the Docker image to the Docker private registry and the Helm chart to the GitHub repository.
 
 
+## CI/CD workflow with Helm and Docker
 
-# CI/CD workflow with Helm and Docker
-
-Upon the completion of the CI/CD pipeline, a new archived chart will be available in the GitHub repository, as shown in figure 11.24.
-
+Upon the completion of the CI/CD pipeline, a new archived chart will be available in the GitHub repository, as it shows below.
 
 
-# Packaging the Movies Marketplace chart
+def getUrl(){
+    switch(env.BRANCH_NAME){
+        case 'preprod':
+            return 'https://api.staging.domain.com'
+        case 'master':
+            return 'https://api.production.domain.com'
+        default:
+            return 'https://api.sandbox.domain.com'
+    }
+}
+
+
+## Packaging the Movies Marketplace chart
 
 The index.yaml file will reference the newly built Helm chart under the entries section, as you can see in figure 11.25.
+sh 'helm package chart --app-version ${appVersion} --version ${chartVersion}'
 
 
 
-# Helm repository metadata
+## Helm repository metadata
 
 You can override the chart version set in Chart.yaml by providing the new version with the --version flag at the time of packaging a Helm chart:
 
@@ -626,7 +645,7 @@ Repeat the same steps for other repositories to create a Helm chart per service.
 
 
 
-# Application charts stored in the GitHub repository
+## Application charts stored in the GitHub repository
 
 Next, we configure the GitHub repository as a Helm repository:
 
@@ -692,15 +711,11 @@ The -m flag is used to set a time-out of 10 seconds, to give Kubernetes enough t
 Once you push the changes to the Git remote repository, a new build will be triggered. Upon the completion of the CI/CD pipeline, a cURL command will be executed with a GET request on the service URL, as shown in figure 11.27.
 
 
-
-
 If the service responds before the expiration time-out, the cURL command will return a successful exit code. Otherwise, an error will be thrown to make the pipeline fail.
 
 However, if the service is responding, that doesn’t mean it’s working correctly or a new version of the service has been successfully deployed.
 
 To be able to issue advanced HTTP requests against the service URL, we will install the Jenkins HTTP Request plugin (www.jenkins.io/doc/pipeline/steps/http_request/) from the Jenkins Plugins page.
-
-
 
 
 We can now update the movies-store’s Jenkinsfile. The plugin offers an httpRequest DSL object that can be used to call a remote URL. In the following listing, httpRequest returns a response object that exposes the response body through a content attribute. Then, we use the JsonSlurper class to parse the response to a JSON object. The updated Healthcheck stage is shown in the following listing.
@@ -718,11 +733,11 @@ stage('Healthcheck'){
 }
 The service returns the version number deployed in Kubernetes. This value is fixed in the service source code, but you can inject the Jenkins build ID as a version number while building the Docker image of the service and check whether the returned version is equal to the Jenkins build ID at the Healthcheck stage.
 
-Figure 11.29 shows the end result of the CI/CD pipeline of each microservice running in Kubernetes.
+This picture shows the end result of the CI/CD pipeline of each microservice running in Kubernetes.
 
+![improvedpipeline](images/improvedpipeline.png)
 
-
-Figure 11.29 Complete CI/CD workflow for containerized microservices
+## Complete CI/CD workflow for containerized microservices
 
 When you opt for Jenkins to build cloud-native applications running in Kubernetes, you’re required to create extensive configurations, as well as spending considerable time learning and using all of the necessary plugins to make it happen. Fortunately, Jenkins X comes into play to offer simplicity and ready-to-go templates.
 
@@ -748,33 +763,6 @@ When the installation is done, you will be presented with useful links and the p
 Jenkins X also deploys a set of supporting services, including the Jenkins dashboard, Docker Registry, ChartMuseum, and Artifact Hub to manage Helm charts, and Nexus, which serves as a Maven and npm repository.
 
 
-
-
-The following is the output of the kubectl get svc command:
-
-
-
-Point your browser to the Jenkins URL printed during the installation process and sign in with the admin username and password displayed previously in figure 11.30. The dashboard in figure 11.31 should be served.
-
-
-
-
-It is possible to run Jenkins in serverless mode while installing Jenkins X. Then, instead of running the Jenkins web dashboard, which continuously consumes CPU and memory resources, you can run Jenkins only when you need it.
-
-The Jenkins X installation also creates two Git repositories by default: one for your staging environment and one for production, as shown in figure 11.32:
-
-Staging—Any merge performed on the project master branch will automatically be deployed as a new version to staging (auto promote).
-
-Production—You will have to manually promote your staging application version into production by using a jx promote command.
-
-
-
-
-
-Jenkins X uses these repositories to manage deployments to each environment, and promotions are done via Git pull requests. Each repository contains a Helm chart that specifies the applications to be deployed to the corresponding environment. Each repository also has a Jenkinsfile to handle promotions.
-
-Now that you have a working cluster with Jenkins X installed, we are going to create an application that can be built and deployed with Jenkins X. For clarity, I have created a RESTful API in Go that serves an HTTP endpoint with a list of the top 100 IMDb movies. We will import this project inside Jenkins with this command:
-
 jx import
 If you wish to import a project that is already in a remote Git repository, you can use the --url argument:
 
@@ -783,30 +771,22 @@ The following is the output of the import command:
 
 
 
-Jenkins X will go over the code and choose the right default build pack for the project based on the programming language. Our project was developed in Go, so it will be a Go build pack. Jenkins X will generate a Jenkinsfile, Dockerfile, and Helm chart based on the project runtime environment. The import command will create a remote repository on GitHub, register a webhook, and push the code to the remote repository, shown in figure 11.33.
+Jenkins X will go over the code and choose the right default build pack for the project based on the programming language. Our project was developed in Go, so it will be a Go build pack. Jenkins X will generate a Jenkinsfile, Dockerfile, and Helm chart based on the project runtime environment. The import command will create a remote repository on GitHub, register a webhook, and push the code to the remote repository.
 
 
 
-Figure 11.33 Application GitHub repository
+![pipeline](images/fullpipeline.png)
 
 Jenkins X will also automatically create a Jenkins multibranch pipeline job for the project, and the pipeline will be triggered. You can check the progress of the pipeline with this command:
 
 jx get activity -f jx-movies-store -w
 
 
-You can also track the progress of the pipeline from the Jenkins dashboard by clicking the project job; figure 11.34 shows the result.
-
-
-
-
-The pipeline stages are executed on a Kubernetes pod running in the Kubernetes cluster we provisioned earlier, as you can see in figure 11.35.
-
 
 
 
 The executed pipeline will clone the repository, build the Docker image, and push it to a Docker registry, as shown in the following listing.
 
-Listing 11.26 Build stage when an event occurs on master branch
 
 stage('Build Release') {
       when {
@@ -834,11 +814,7 @@ A Helm chart will be packaged and pushed to the ChartMuseum repository, and a ne
 
 
 
-Figure 11.36 Publishing the application release
-
 The release will be promoted automatically to the staging environment, as shown in figure 11.37.
-
-
 
 
 During the promotion stage, a new PR will be created by Jenkins X to deploy the new release to staging. This PR will add our application and its version in the env/requirements.yaml file inside the Git repository, as shown in figure 11.38.
