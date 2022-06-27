@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies-loader
+  namespace: watchlist
+spec:
+  selector:
+    matchLabels:
+      app: movies-loader
+  template:
+    metadata: 
+      labels: 
+        app: movies-loader
+    spec:
+      containers:
+      - name: movies-loader
+        image: ID.dkr.ecr.REGION.amazonaws.com/USER/movies-loader:develop
+        env:
+        - name: AWS_REGION
+          value: REGION
+        - name: SQS_URL
+          value: https://sqs.REGION.amazonaws.com/USER/movies_to_parse_sandbox
