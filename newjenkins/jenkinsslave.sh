@@ -26,4 +26,10 @@ sudo mkdir /home/jenkins/jenkins_slave/.ssh
 ssh-keygen -t rsa -C "The access key for Jenkins slaves"
 cat id_rsa.pub > /home/jenkins/.ssh/authorized_keys
 sudo usermod -a -G docker jenkins
+
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+wget -O install_kustomize.sh https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh
+sudo chmod +x install_kustomize.sh
+sudo rm -Rrf kustomize
+sudo ./install_kustomize.sh
 echo finished!!
