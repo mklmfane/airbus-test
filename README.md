@@ -12,3 +12,8 @@ Here is the source code for the movie recommender tutorial.
 To run the movie recommender, one must have Docker and Docker compose installed.
 Then at a terminal inside the repo, one can run the docker compose with the following command:
 Jenkinsfile will be installing the movie-recommnder application by using `docker-compose up`
+
+
+# Build the pipeline
+
+![pipeline](http://https://github.com/mklmfane/airbus-test/tree/main/pipeline.png)
