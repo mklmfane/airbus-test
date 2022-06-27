@@ -1,0 +1,29 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  vars:
+    jenkins_version: "2.191"
+    jenkins_hostname: 127.0.0.1
+    jenkins_plugin_timeout: 300
+    jenkins_plugins:
+      - pipeline
+      - pipeline-basic-steps
+      - pipeline-model-definition
+      - pipeline-stage-view
+      - blueocean
+      - blueocean-pipeline-editor
+      - ansicolor
+      - greenballs
+    java_packages:
+      - openjdk-11-jdk
+  pre_tasks:
+    - name: python bootstrap
+      raw: "test -e /usr/bin/python || ( apt -y update && apt install -y python-minimal )"
+      when:
+        - ansible_python_interpreter is not defined
+    - name: Gather facts
+      setup:
+  roles:
+    - role: geerlingguy.java
+    - role: geerlingguy.jenkins

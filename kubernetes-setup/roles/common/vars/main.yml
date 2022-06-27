@@ -1,0 +1,4 @@
+---
+# vars file for common
+kubernetes_version: "1.20.6-00"
+
