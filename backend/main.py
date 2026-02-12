@@ -39,37 +39,37 @@ app.add_middleware(
 )
 
 def get_number_of(collection):
-    num_of_movies = collection.find({}).count()
+    num_of_movies = collection.count_documents({})
     return num_of_movies
 
 def save_to_db(csv_file, file_size, jobId, collection):
     _index = get_number_of(collection)
     csv_file.file.seek(0)
-    for i, l in enumerate(csv_file.file):
-        pass
+    total_lines = sum(1 for _ in csv_file.file)
+    data_rows = max(total_lines - 1, 0)
     csv_file.file.seek(0)
     headers = csv_file.file.readline().decode().replace(";\n", "").split(";")
-    for j, l in enumerate(csv_file.file):
+    for j, l in enumerate(csv_file.file, start=1):
         line = l.decode()
         line = line.replace(";\n", "")
         row_elem = line.split(";")
         if len(row_elem) > len(headers):
             job_doc = {"jobId": jobId,
                 "status": "Error",
-                "percentage": int((j/i)*100),
+                "percentage": int((j/data_rows)*100) if data_rows else 100,
                 "reason": f"Ilegal Character in line {j}"}
             status_col.update_one({"jobId": jobId}, {"$set": job_doc})
         else:
             doc = {}
             for e in range(len(row_elem)):
                 doc[headers[e]] = row_elem[e]
-            doc["index"] = _index + j
+            doc["index"] = _index + (j - 1)
             if collection.find_one(doc) is None: 
                 collection.insert_one(doc)
             else:
                 pass
-            status_col.update_one({"jobId": jobId}, {"$set": {"percentage": int((j/i)*100)}})
-    status_col.update_one({"jobId": jobId}, {"$set": {"percentage": 100, "status": "complete", "fileName": csv_file.filename, "fileSize": file_size, "numOfRows": i}})
+            status_col.update_one({"jobId": jobId}, {"$set": {"percentage": int((j/data_rows)*100) if data_rows else 100}})
+    status_col.update_one({"jobId": jobId}, {"$set": {"percentage": 100, "status": "complete", "fileName": csv_file.filename, "fileSize": file_size, "numOfRows": data_rows}})
             
 def make_movie_encoding():
     unique_movies = ratings_col.distinct("movieId")
